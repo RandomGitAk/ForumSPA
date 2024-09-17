@@ -17,7 +17,7 @@ This document describes only the [non-functional requirements](https://en.wikipe
 
 Before starting the development, put the task code you have received into the [README.md](README.md) file:
 
-TASK CODE: PUT THE TASK CODE YOU RECEIVED HERE.
+TASK CODE: FORUM.
 
 
 ### Target Framework
