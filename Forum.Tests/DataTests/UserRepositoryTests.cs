@@ -39,7 +39,7 @@ public class UserRepositoryTests
             Role = role
         };
         _ = await this.context.Roles.AddAsync(role);
-        _ = this.context.Users.AddAsync(user);
+        _ = await this.context.Users.AddAsync(user);
         _ = await this.context.SaveChangesAsync();
 
         // Act
@@ -143,7 +143,7 @@ public class UserRepositoryTests
             HashedPasssword = "hashed_password",
             Salt = "salt_value"
         };
-        _ = this.context.Users.AddAsync(user);
+        _ = await this.context.Users.AddAsync(user);
         _ = await this.context.SaveChangesAsync();
 
         // Act
@@ -167,7 +167,7 @@ public class UserRepositoryTests
             HashedPasssword = "wrong_password",
             Salt = "salt_value"
         };
-        _ = this.context.Users.AddAsync(user);
+        _ = await this.context.Users.AddAsync(user);
         _ = await this.context.SaveChangesAsync();
 
         var userToVerify = new User
@@ -203,7 +203,7 @@ public class UserRepositoryTests
             Salt = "salt_value",
             Role = role
         };
-        _ = this.context.Users.AddAsync(user);
+        _ = await this.context.Users.AddAsync(user);
         _ = await this.context.SaveChangesAsync();
 
         var refreshToken = "new_refresh_token";
@@ -277,7 +277,7 @@ public class UserRepositoryTests
             RefreshTokenExpiryDate = DateTime.UtcNow.AddDays(7),
             Role = role,
         };
-        _ = this.context.Users.AddAsync(user);
+        _ = await this.context.Users.AddAsync(user);
         _ = await this.context.SaveChangesAsync();
 
         // Act

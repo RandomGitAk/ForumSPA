@@ -8,33 +8,45 @@ public static class DbInit
 {
     public static async Task InitializeAsync(IUser users, IRole roles)
     {
+        ValidateParameters(users, roles);
+        await SeedRolesAsync(roles);
+        await SeedUsersAsync(users, roles);
+    }
+
+    public static async Task InitializeContentAsync(ApplicationContext context)
+    {
+        ValidateParameter(context);
+        await SeedCategoriesAsync(context);
+        await SeedPostsAsync(context);
+        await SeedCommentsAsync(context);
+    }
+
+    private static void ValidateParameters(IUser users, IRole roles)
+    {
         ArgumentNullException.ThrowIfNull(roles);
         ArgumentNullException.ThrowIfNull(users);
+    }
 
+    private static async Task SeedRolesAsync(IRole roles)
+    {
         if (await roles.FindByNameAsync("User") == null)
         {
-            await roles.AddAsync(new Role
-            {
-                Name = "User",
-            });
+            await roles.AddAsync(new Role { Name = "User" });
         }
 
         if (await roles.FindByNameAsync("Moderator") == null)
         {
-            await roles.AddAsync(new Role
-            {
-                Name = "Moderator",
-            });
+            await roles.AddAsync(new Role { Name = "Moderator" });
         }
 
         if (await roles.FindByNameAsync("Admin") == null)
         {
-            await roles.AddAsync(new Role
-            {
-                Name = "Admin",
-            });
+            await roles.AddAsync(new Role { Name = "Admin" });
         }
+    }
 
+    private static async Task SeedUsersAsync(IUser users, IRole roles)
+    {
         var adminRoleFromDb = await roles.FindByNameAsync("Admin");
         var userRoleFromDb = await roles.FindByNameAsync("User");
 
@@ -72,100 +84,110 @@ public static class DbInit
                 HashedPasssword = hashedPassword,
                 RoleId = userRoleFromDb!.Id,
             };
+
             await users.AddAsync(user);
         }
     }
 
-    public static async Task InitializeContentAsync(ApplicationContext context)
+    private static void ValidateParameter(ApplicationContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+    }
+
+    private static async Task SeedCategoriesAsync(ApplicationContext context)
+    {
+        if (!await context.Categories.AnyAsync())
+        {
+            await context.Categories.AddRangeAsync(new List<Category>
+        {
+            new Category
+            {
+                Name = "Technology",
+                Description = "Discussions about the latest in technology, gadgets, software, and innovations.",
+            },
+            new Category
+            {
+                Name = "Programming",
+                Description = "A place to discuss coding techniques, share code, and ask for help on various programming languages.",
+            },
+            new Category
+            {
+                Name = "Gaming",
+                Description = "Discuss video games, platforms, and game development. Share tips, reviews, and news.",
+            },
+            new Category
+            {
+                Name = "Science",
+                Description = "Explore the world of science, from physics to biology. Share discoveries, theories, and research.",
+            },
+            new Category
+            {
+                Name = "General Discussion",
+                Description = "A casual space for general conversations on any topic not covered by other categories.",
+            },
+        });
+
+            _ = await context.SaveChangesAsync();
+        }
+    }
+
+    private static async Task SeedPostsAsync(ApplicationContext context)
+    {
         var admin = await context.Users.FirstOrDefaultAsync(e => e.Email == "admin@gmail.com");
         var user = await context.Users.FirstOrDefaultAsync(e => e.Email == "alex@gmail.com");
 
-        if (!await context.Categories.AnyAsync())
-        {
-            await context.Categories.AddRangeAsync(
-             new List<Category>
-                {
-                        new Category
-                        {
-                            Name = "Technology",
-                            Description = "Discussions about the latest in technology, gadgets, software, and innovations.",
-                        },
-                        new Category
-                        {
-                            Name = "Programming",
-                            Description = "A place to discuss coding techniques, share code, and ask for help on various programming languages.",
-                        },
-                        new Category
-                        {
-                            Name = "Gaming",
-                            Description = "Discuss video games, platforms, and game development. Share tips, reviews, and news.",
-                        },
-                        new Category
-                        {
-                            Name = "Science",
-                            Description = "Explore the world of science, from physics to biology. Share discoveries, theories, and research.",
-                        },
-                        new Category
-                        {
-                            Name = "General Discussion",
-                            Description = "A casual space for general conversations on any topic not covered by other categories.",
-                        },
-                });
-            _ = await context.SaveChangesAsync();
-        }
-
         if (!await context.Posts.AnyAsync())
         {
-            await context.Posts.AddRangeAsync(
-                new List<Post>
-                {
-                        new Post
-                        {
-                            Title = "Latest iPhone Release",
-                            Content = "What do you think about the latest iPhone release? Is it worth the upgrade?",
-                            PostedDate = DateTime.UtcNow,
-                            UserId = admin!.Id,
-                            Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Technology") ?? null!,
-                        },
-                        new Post
-                        {
-                            Title = "C# Null Reference Exception Help",
-                            Content = "Can anyone help me debug this C# code? I'm getting a null reference exception.",
-                            PostedDate = DateTime.UtcNow,
-                            UserId = user!.Id,
-                            Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Programming") ?? null!,
-                        },
-                        new Post
-                        {
-                            Title = "Baldur's Gate 3 Impressions",
-                            Content = "Has anyone tried the new Baldur's Gate 3? How does it compare to Divinity: Original Sin 2?",
-                            PostedDate = DateTime.UtcNow,
-                            UserId = admin!.Id,
-                            Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Gaming") ?? null !,
-                        },
-                        new Post
-                        {
-                            Title = "James Webb Space Telescope Discoveries",
-                            Content = "The James Webb Space Telescope has captured some amazing images of distant galaxies! Let's discuss the findings.",
-                            PostedDate = DateTime.UtcNow,
-                            UserId = user!.Id,
-                            Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Science") ?? null !,
-                        },
-                        new Post
-                        {
-                            Title = "Remote Work - Future or Trend?",
-                            Content = "What's everyone's opinion on remote work? Is it the future or a temporary trend?",
-                            PostedDate = DateTime.UtcNow,
-                            UserId = admin!.Id,
-                            Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "General Discussion") ?? null!,
-                        },
-                });
+            await context.Posts.AddRangeAsync(new List<Post>
+        {
+            new Post
+            {
+                Title = "Latest iPhone Release",
+                Content = "What do you think about the latest iPhone release? Is it worth the upgrade?",
+                PostedDate = DateTime.UtcNow,
+                UserId = admin!.Id,
+                Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Technology") ?? null!,
+            },
+            new Post
+            {
+                Title = "C# Null Reference Exception Help",
+                Content = "Can anyone help me debug this C# code? I'm getting a null reference exception.",
+                PostedDate = DateTime.UtcNow,
+                UserId = user!.Id,
+                Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Programming") ?? null!,
+            },
+            new Post
+            {
+                Title = "Baldur's Gate 3 Impressions",
+                Content = "Has anyone tried the new Baldur's Gate 3? How does it compare to Divinity: Original Sin 2?",
+                PostedDate = DateTime.UtcNow,
+                UserId = admin!.Id,
+                Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Gaming") ?? null!,
+            },
+            new Post
+            {
+                Title = "James Webb Space Telescope Discoveries",
+                Content = "The James Webb Space Telescope has captured some amazing images of distant galaxies! Let's discuss the findings.",
+                PostedDate = DateTime.UtcNow,
+                UserId = user!.Id,
+                Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "Science") ?? null!,
+            },
+            new Post
+            {
+                Title = "Remote Work - Future or Trend?",
+                Content = "What's everyone's opinion on remote work? Is it the future or a temporary trend?",
+                PostedDate = DateTime.UtcNow,
+                UserId = admin!.Id,
+                Category = await context.Categories.FirstOrDefaultAsync(e => e.Name == "General Discussion") ?? null!,
+            },
+        });
 
             _ = await context.SaveChangesAsync();
         }
+    }
 
+    private static async Task SeedCommentsAsync(ApplicationContext context)
+    {
         if (!await context.Comments.AnyAsync())
         {
             var firstPost = await context.Posts.FirstOrDefaultAsync(e => e.Title == "Latest iPhone Release") ?? null!;
@@ -173,26 +195,26 @@ public static class DbInit
             var thirdPost = await context.Posts.FirstOrDefaultAsync(e => e.Title == "Baldur's Gate 3 Impressions") ?? null!;
 
             var initialComments = new List<Comment>
-                {
-                    new Comment
-                    {
-                        Content = "I think the new iPhone is great, but the price is a bit high for the small upgrades.",
-                        Post = firstPost,
-                        UserId = admin!.Id,
-                    },
-                    new Comment
-                    {
-                        Content = "Check if you're initializing all your objects properly. This error often comes from uninitialized variables.",
-                        Post = secondPost,
-                        UserId = user!.Id,
-                    },
-                    new Comment
-                    {
-                        Content = "Baldur's Gate 3 is amazing! The character customization and dialogue options are fantastic.",
-                        Post = thirdPost,
-                        UserId = admin!.Id,
-                    },
-                };
+        {
+            new Comment
+            {
+                Content = "I think the new iPhone is great, but the price is a bit high for the small upgrades.",
+                Post = firstPost,
+                UserId = firstPost.UserId,
+            },
+            new Comment
+            {
+                Content = "Check if you're initializing all your objects properly. This error often comes from uninitialized variables.",
+                Post = secondPost,
+                UserId = secondPost.UserId,
+            },
+            new Comment
+            {
+                Content = "Baldur's Gate 3 is amazing! The character customization and dialogue options are fantastic.",
+                Post = thirdPost,
+                UserId = thirdPost.UserId,
+            },
+        };
 
             await context.Comments.AddRangeAsync(initialComments);
             _ = await context.SaveChangesAsync();
@@ -204,7 +226,7 @@ public static class DbInit
                 Content = "I agree with you! The price is really high, especially considering the minor improvements.",
                 ParentCommentId = parentComment.Id,
                 PostId = parentComment.PostId,
-                UserId = user!.Id,
+                UserId = parentComment.UserId,
             };
 
             _ = await context.Comments.AddAsync(replyComment);

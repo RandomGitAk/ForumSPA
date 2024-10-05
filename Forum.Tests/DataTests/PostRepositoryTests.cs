@@ -169,8 +169,8 @@ public class PostRepositoryTests
         var likes = new List<PostLike> { new PostLike { PostId = 7, UserId = 4, IsLike = true } };
 
         var post = new Post { Id = 7, Content = "content", Title = "Post 1", UserId = 4, User = user, CategoryId = 4, Category = category, Likes = likes, PostedDate = DateTime.Now };
-        _ = this.context.Users.AddAsync(user);
-        _ = this.context.Categories.AddAsync(category);
+        _ = await this.context.Users.AddAsync(user);
+        _ = await this.context.Categories.AddAsync(category);
         _ = this.context.PostLikes.AddRangeAsync(likes);
         _ = await this.context.Posts.AddAsync(post);
         _ = await this.context.SaveChangesAsync();
